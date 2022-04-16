@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.custody.mapper.MonitorMapper">
+    <select id="getMonitorAbnormalUserByAbnormal" resultType="AbnormalTypeInformation">
+        select * from view_user_information_bracelet_abnormal
+<where>
+    curdate() - INTERVAL 1 DAY  &lt;= date
+<if test="monitorAbnormal == '姿态异常'">
+    and posture = #{monitorAbnormal}
+</if>
+<if test="monitorAbnormal == '情绪异常'">
+    and emotion = #{monitorAbnormal}
+</if>
+</where>
+    </select>
+
+    <select id="getMonitorAbnormalTypeNumber" resultType="CustodyAbnormalTypeNumber">
+        select '姿态异常' name,count(posture) value from view_user_information_bracelet where posture = '摔倒' and curdate() - INTERVAL 1 DAY  &lt;= date union
+        select '情绪异常' name,count(emotion) value from view_user_information_bracelet where emotion in ('悲伤','生气') and curdate() - INTERVAL 1 DAY  &lt;= date
+    </select>
+
+    <select id="getMonitorAbnormalUserInformation" resultType="UsersInformation">
+        select vb.userid userid,
+               vb.name name,
+               vb.gender gender,
+               vb.headurl headurl,
+        vb.heartrate heartrate,
+        vb.temperature temperature,
+        vb.bloodpressure bloodpressure,
+        vb.tilt tilt,
+        vb.posture posture,
+        vb.state state,
+        vb.emotion emotion,
+        vb.date date,
+        vb.location location,
+        vb.roadlocation roadlocation
+        from  view_user_information_bracelet vb <where>
+        and curdate() - INTERVAL 1 DAY  &lt;= vb.date
+        <if test="monitorAbnormal == '姿态异常'">
+           and vb.posture = '摔倒'
+        </if>
+        <if test="monitorAbnormal == '情绪异常'">
+            and vb.emotion IN ('生气','悲伤')
+        </if>
+    </where>
+    </select>
+</mapper>

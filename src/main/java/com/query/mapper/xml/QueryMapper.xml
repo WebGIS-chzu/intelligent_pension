@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.query.mapper.QueryMapper">
+
+<!--    <resultMap id="queryNursing" type="NursingWorkerInformation"></resultMap>-->
+<!--    <select id="queryNursingWorkerByCondition" resultMap="queryNursing">-->
+<!--        SELECT uw.`name` nursingName,uw.gender gender,uw.age age,uw.id_card_number id_card_number,uw.id nursingid,uw.phoneNumber phoneNumber,vs.servicename name,count(vs.servicename) value-->
+<!--        FROM user_nursing_workers uw left join view_nursing_workers_service vs on uw.id = vs.nursingid-->
+<!--        WHERE uw.id = 10000105-->
+<!--        GROUP BY name,orderid-->
+<!--    </select>-->
+
+    <select id="queryNursingWorkerByCondition" resultType="QueryTypeNumber">
+        select id name,location value,view_nursing_workers_evaluate.order_number number from user_nursing_workers left join view_nursing_workers_evaluate on user_nursing_workers.id = view_nursing_workers_evaluate.nursingid left join nursing_workers_service on user_nursing_workers.id = nursing_workers_service.nursingid <where>
+        <if test="name != '' and name != null">
+            user_nursing_workers.name = #{name}
+        </if>
+        <if test="nursingId != '' and nursingId != null">
+           and id = #{nursingId}
+        </if>
+        <if test="orderNumberMin != '' and orderNumberMin != null">
+            and view_nursing_workers_evaluate.order_number >= #{orderNumberMin}
+        </if>
+        <if test="orderNumberMax != '' and orderNumberMax != null">
+            and view_nursing_workers_evaluate.order_number &lt;= #{orderNumberMax}
+        </if>
+        <if test="evaluateMin != '' and evaluateMin != null">
+            and view_nursing_workers_evaluate.evaluate >= #{evaluateMin}
+        </if>
+        <if test="evaluateMax != '' and evaluateMax != null">
+            and view_nursing_workers_evaluate.evaluate &lt;= #{evaluateMax}
+        </if>
+    </where>
+group by name
+    </select>
+
+    <resultMap id="queryNursing" type="NursingWorkerInformation">
+        <id column="nursingId" property="nursingId"></id>
+        <result column="nursingName" property="nursingName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="age" property="age"></result>
+        <result column="idCardNumber" property="idCardNumber"></result>
+        <result column="headPortrait" property="headPortrait"></result>
+        <result column="phoneNumber" property="phoneNumber"></result>
+        <result column="location" property="location"></result>
+        <collection property="queryTypeNumber" ofType="QueryTypeNumber">
+            <result column="name" property="name"></result>
+            <result column="value" property="value"></result>
+        </collection>
+        <collection property="orderInformation" ofType="OrderInformation">
+            <result column="orderId" property="orderId"></result>
+            <result column="serviceName" property="serviceName"></result>
+            <result column="evaluate" property="evaluate"></result>
+            <result column="date" property="date"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getNursingWorkerInformationByNursingId" resultMap="queryNursing">
+        SELECT uw.`name` nursingName,uw.gender gender,
+               uw.age age,uw.id_card_number idCardNumber,
+               uw.id nursingId,uw.head_portrait headPortrait,
+               uw.phoneNumber phoneNumber,
+               uw.location location,
+               vs.servicename name,
+               count(vs.servicename) value
+                FROM user_nursing_workers uw left join view_nursing_workers_service vs on uw.id = vs.nursingid
+                WHERE uw.id = #{nursingId}
+                GROUP BY name
+    </select>
+
+    <select id="getOrderInformationByNursingId" resultType="OrderInformation">
+        SELECT
+               vs.orderid orderId,
+               vs.servicename serviceName,
+               vs.evaluate evaluate,
+               vs.date date
+        FROM  view_nursing_workers_service vs
+        WHERE vs.nursingid = #{nursingId}
+order by date desc
+    </select>
+
+    <resultMap id="elderlyAddress" type="ElderlyQueryAddress">
+        <id column="community" property="name"></id>
+        <collection property="value" ofType="ElderlyQueryAddress">
+            <result column="building" property="name"></result>
+            <collection property="value" ofType="ElderlyQueryAddress">
+                <result column="house_number" property="name"></result>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getElderlyAddress" resultMap="elderlyAddress">
+        select community,building,house_number from user_information
+    </select>
+
+    <select id="queryElderlyByCondition" resultType="QueryTypeNumber">
+        select vi.userid name,vi.location value from view_user_information vi left join view_user_information_bracelet vb on vi.userid = vb.userid
+<where>
+    vb.date>NOW()-INTERVAL 30 HOUR
+    <if test="name != '' and name != null">
+       and vi.name = #{name}
+    </if>
+    <if test="idCardNumber != '' and idCardNumber != null">
+        and vi.idcardnumber = #{idCardNumber}
+    </if>
+    <if test="community != '' and community != null">
+        and vi.community = #{community}
+    </if>
+    <if test="building != '' and building != null">
+        and vi.building = #{building}
+    </if>
+    <if test="houseNumber != '' and houseNumber != null">
+        and vi.house_number = #{houseNumber}
+    </if>
+    <if test="heartRateMin != '' and heartRateMin != null">
+        and vb.heartrate >= #{heartRateMin}
+    </if>
+    <if test="heartRateMax != '' and heartRateMax != null">
+        and vb.heartrate &lt;= #{heartRateMax}
+    </if>
+    <if test="bloodPressureMin != '' and bloodPressureMin != null">
+        and vb.bloodpressure >= #{bloodPressureMin}
+    </if>
+    <if test="bloodPressureMax != '' and bloodPressureMax != null">
+        and vb.bloodpressure &lt;= #{bloodPressureMax}
+    </if>
+</where>
+        GROUP BY vi.userid
+    </select>
+
+    <resultMap id="ElderlyInformationMap" type="ElderlyInformation">
+        <id column="name" property="name"></id>
+        <result column="age" property="age"></result>
+        <result column="gender" property="gender"></result>
+        <result column="idCardNumber" property="idCardNumber"></result>
+        <result column="address" property="address"></result>
+        <result column="phoneNumber" property="phoneNumber"></result>
+        <result column="childrenName" property="childrenName"></result>
+        <result column="childrenPhoneNumber" property="childrenPhoneNumber"></result>
+        <result column="headPortrait" property="headPortrait"></result>
+        <collection property="braceletInformationList" ofType="ElderlyBraceletInformation">
+            <id column="state" property="name"></id>
+            <collection property="value" ofType="QueryTypeNumber">
+                <result column="type" property="name"></result>
+                <result column="value" property="value"></result>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getElderlyInformationByUserid" resultMap="ElderlyInformationMap">
+        SELECT  vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'当前健康' state,'血压' type,`bloodpressure` value from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'当前健康','心率',`heartrate` from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'当前健康','睡眠',sleep from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'当前健康','体温',temperature from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT  vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'标准健康' state,'血压' type,'125' value from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'标准健康','心率','75' from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'标准健康','睡眠','7.0' from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+        union all
+        SELECT vi.`name`,vi.age,vi.gender,vi.idcardnumber idCardNumber,vi.address,vi.phonenumber phoneNumber,vi.children_name childrenName,vi.children_phone_number childrenPhoneNumber,vi.headportrait headPortrait,'标准健康','体温','36.5' from user_information_bracelet ub left join view_user_information vi on ub.userid = vi.userid WHERE ub.userid = #{userid} GROUP BY ub.userid
+    </select>
+
+    <resultMap id="wpgCostMap" type="ElderlyBraceletInformation">
+        <id column="type" property="name"></id>
+        <collection property="value" ofType="QueryTypeNumber">
+            <result column="name" property="name"></result>
+            <result column="value" property="value"></result>
+        </collection>
+    </resultMap>
+    <select id="getWpgCostList" resultMap="wpgCostMap">
+        SELECT '当前消费' type,'水费' name,vw.waterrate value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid union all
+        SELECT '当前消费' type,'电费' name,vw.powerrate value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid union all
+        SELECT '当前消费' type,'燃气费' name,vw.gascost value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid union all
+        SELECT '标准消费' type,'水费' name,'2.50' value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid union all
+        SELECT '标准消费' type,'电费' name,'2.50' value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid union all
+        SELECT '标准消费' type,'燃气费' name,'1.00' value from view_user_information_wpgcost vw
+        where vw.userid = '10000006'
+        GROUP BY vw.userid
+    </select>
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lost.mapper.LostWarningMapper">
+
+    <select id="getBelostUserInformation" resultType="BeLostUserInformation">
+        select * from view_user_lost_information group by userid
+    </select>
+
+    <update id="updateLostStateByUserid">
+        update user_lost set lost_state = #{lostState} where userid = #{userid}
+    </update>
+
+    <select id="getLostFindInformation" resultType="LostFindInformation">
+        select userid,name,age,date,find_location,lost_state lostState from user_lost_find_information order by date desc
+    </select>
+
+    <insert id="insertLostFindInformationByUserid">
+        insert into user_lost_find_information(userid,name,age,date,find_location,lost_state) values (#{userid},#{name},#{age},#{date},#{find_location},#{lostState})
+    </insert>
+
+    <delete id="deleteLostInformation">
+        delete from user_lost where userid = #{userid}
+    </delete>
+
+    <select id="getUserInformationByUserid" resultType="java.lang.String">
+        select name from user_information where userid = #{userid}
+    </select>
+
+    <insert id="insertUserLostInformation">
+        insert into user_lost(userid,name,age,lost_date,lost_location) values(#{userid},#{name},#{age},#{lostDate},#{lostLocation})
+    </insert>
+
+    <select id="getLostTypeInformation" resultType="LostTypeNumber">
+        select '走失人数' name,count(userid) value from user_lost union
+        select '监控数量' name,273 value union
+        select '社区人员' name,34 value union
+        select '警察人数' name,16 value
+    </select>
+
+    <select id="getNodeList" resultType="com.social.entity.ChainNodeList">
+        SELECT vc.userid,vc.`name`,vc.user_headportrait headPortrait
+        from view_user_children vc where userid = #{userid} GROUP BY userid union all
+        SELECT vc.children_id,vc.children_name,vc.children_headportrait headPortrait
+        FROM view_user_children vc where userid = #{userid}
+    </select>
+    <select id="getLinkList" resultType="com.social.entity.ChainLinkList">
+        SELECT vc.userid sender_id,vc.children_id recipient_id,'亲子关系' date
+        from view_user_children vc where userid = #{userid}
+    </select>
+</mapper>

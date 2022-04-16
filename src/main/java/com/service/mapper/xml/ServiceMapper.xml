@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.service.mapper.ServiceMapper">
+<select id="getServiceOrderInformation" resultType="ServiceInformation">
+    select orderid orderId,nursingid nursingId,nursingname nursingName,nursing_phone_number nursingPhoneNumber,serviceid serviceId,
+           servicename serviceName,userid userid,username userName,service_describe serviceDescribe,evaluate evaluate,
+           (case when service_state = 0 then '已结束' when service_state = 1 then '进行中' else '已结束' end) serviceState,date date,location location,date_type dateType
+from view_nursing_workers_service
+<where>
+    curdate() - INTERVAL 1 DAY  &lt;= date
+<if test="serviceType != '' and serviceType != null">
+   and servicename = #{serviceType}
+</if>
+</where>
+order by date desc
+</select>
+
+    <select id="getNursingWorkersServiceNumber" resultType="com.service.entity.ServiceTypeNumber">
+        select '护工在线数量' name,count(distinct(nursingid)) value from view_nursing_workers_service <where>
+        date>=DATE_SUB(NOW(),INTERVAL 1 DAY)
+        <if test="serviceType != '' and serviceType != null">
+           and servicename = #{serviceType}
+        </if>
+    </where>  union
+        select '服务中数量' name,count(distinct(nursingid)) value from view_nursing_workers_service <where>
+        service_state = 1 and date>NOW()-INTERVAL 8 HOUR
+        <if test="serviceType != '' and serviceType != null">
+            and servicename = #{serviceType}
+        </if>
+</where>
+
+    </select>
+
+    <select id="getNursingWorkersLevelNumber" resultType="ServiceMaxTypeNumber">
+        select '不合格' name,count(evaluate)+100 max,count(evaluate) value from view_nursing_workers_service
+<where>
+    evaluate in (0,20)
+    <if test="serviceType != '' and serviceType != null">
+        and servicename = #{serviceType}
+    </if>
+</where> union
+        select '合格' name,count(evaluate)+100 max,count(evaluate) value from view_nursing_workers_service
+        <where>
+            evaluate = 40
+            <if test="serviceType != '' and serviceType != null">
+                and servicename = #{serviceType}
+            </if>
+        </where> union
+        select '中等' name,count(evaluate)+100 max,count(evaluate) value from view_nursing_workers_service
+        <where>
+            evaluate = 60
+            <if test="serviceType != '' and serviceType != null">
+                and servicename = #{serviceType}
+            </if>
+        </where> union
+        select '良好' name,count(evaluate)+100 max,count(evaluate) value from view_nursing_workers_service
+        <where>
+            evaluate = 80
+            <if test="serviceType != '' and serviceType != null">
+                and servicename = #{serviceType}
+            </if>
+        </where> union
+        select '优秀' name,count(evaluate)+100 max,count(evaluate) value from view_nursing_workers_service
+        <where>
+            evaluate = 100
+            <if test="serviceType != '' and serviceType != null">
+                and servicename = #{serviceType}
+            </if>
+        </where>
+    </select>
+
+    <select id="getServiceWordsNumber" resultType="ServiceTypeNumber">
+        select name,count(name) value from view_service_words
+        <where>
+            <if test="serviceType != '' and serviceType != null">
+                and service_name = #{serviceType}
+            </if>
+        </where>
+        group by name
+order by value desc
+    </select>
+
+</mapper>

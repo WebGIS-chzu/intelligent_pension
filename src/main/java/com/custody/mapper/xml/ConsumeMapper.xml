@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.custody.mapper.ConsumeMapper">
+    <select id="getConsumeAbnormalTyoeNumber" resultType="CustodyAbnormalTypeNumber">
+select '水费异常' name,count(watertype) value from view_user_information_wpgcost where watertype = '水费异常' and curdate() - INTERVAL 1 DAY  &lt; date union all
+select '电费异常' name,count(powertype) value from view_user_information_wpgcost where powertype = '电费异常' and curdate() - INTERVAL 1 DAY  &lt; date union all
+select '燃气费异常' name,count(gastype) value from view_user_information_wpgcost where gastype = '燃气费异常' and curdate() - INTERVAL 1 DAY  &lt; date
+    </select>
+
+    <select id="getAbnormalUserInformationByType" resultType="ConsumeTypeInformation">
+        select * from view_user_information_wpgcost_abnormal <where>
+        curdate() - INTERVAL 1 DAY  &lt;= date
+        <if test="abnormalType == '水费异常'">
+           and watertype = #{abnormalType}
+        </if>
+<if test="abnormalType == '电费异常'">
+    and powertype = #{abnormalType}
+</if>
+<if test="abnormalType == '燃气费异常'">
+    and gastype = #{abnormalType}
+</if>
+    </where>
+    </select>
+
+    <select id="getUserWpgInformation" resultType="ConsumeTypeInformation">
+        select * from view_user_information_wpgcost where date = date(now())
+    </select>
+
+    <select id="getAbnormalTypeNumberGroupByDate" resultType="ConsumeAbnormalTypeNumber">
+        select '水费异常' name,count(watertype) value,date from view_user_information_wpgcost where watertype = '水费异常' and curdate() - INTERVAL 7 DAY  &lt;= date group by date union
+        select '电费异常' name,count(powertype),date from view_user_information_wpgcost where powertype = '电费异常' and curdate( ) - INTERVAL 7 DAY &lt;= date group by date union
+        select '燃气费异常' name,count(gastype),date from view_user_information_wpgcost where gastype = '燃气费异常' and curdate( ) - INTERVAL 7 DAY  &lt;= date group by date union
+        select '总计' name,count(distinct(userid)),date from view_user_information_wpgcost where gastype = '燃气费异常' or watertype = '水费异常' or powertype = '电费异常' group by date having curdate( ) - INTERVAL 7 DAY  &lt;= date order by date
+    </select>
+
+    <select id="getSolveStateNumber" resultType="CustodyAbnormalTypeNumber">
+        select '已解决' name,count(state) value from view_user_information_wpgcost_abnormal where state = '已解决' and date = date(now()) union
+select '未解决' name,count(state) value from  view_user_information_wpgcost_abnormal where state = '未解决' and date = date(now())
+    </select>
+
+    <select id="getWpgRecord" resultType="ConsumeTypeInformation">
+        select userid,name,address,date,waterrate,'2.0-3.0' waterType,powerrate,'2.0-3.0' powerType,gascost,'0.7-1.3' gasType from view_user_information_wpgcost where date = date(now())
+    </select>
+</mapper>

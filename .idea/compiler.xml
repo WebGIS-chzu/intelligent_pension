@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="match_analysis" />
+        <module name="intelligent-pension" />
+        <module name="Intelligent_pension" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="intelligent-pension" target="1.8" />
+      <module name="Intelligent_pension" target="1.8" />
+      <module name="match_analysis" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Intelligent_pension" options="-parameters" />
+      <module name="intelligent-pension" options="-parameters" />
+      <module name="match_analysis" options="-parameters" />
+    </option>
+  </component>
+</project>

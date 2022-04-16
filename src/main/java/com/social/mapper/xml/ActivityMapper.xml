@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.social.mapper.ActivityMapper">
+    <insert id="addActivity">
+        insert into activity(activity_name,location,begin_time,end_time,director,label,creat_time) values(#{activityName},#{location},#{beginTime},#{endTime},#{director},#{label},#{creatTime})
+    </insert>
+
+    <resultMap id="ActivityInformationList" type="ActivityInformation">
+        <id column="activityId" property="activityId"></id>
+        <result column="activityName" property="activityName"></result>
+        <result column="location" property="location"></result>
+        <result column="date" property="date"></result>
+        <result column="director" property="director"></result>
+        <result column="label" property="label"></result>
+        <result column="state" property="state"></result>
+        <collection property="participantList" ofType="String">
+            <result column="participants" property="participants"></result>
+        </collection>
+    </resultMap>
+    <select id="getActivityInformation" resultMap="ActivityInformationList">
+        select activity_id activityId,activity_name activityName,
+               location location,CONCAT(begin_time,'~',end_time) date,
+               director,label,participants,state from view_activity
+        GROUP BY activity_id
+        order by date desc limit #{page},#{number}
+    </select>
+
+    <resultMap id="getActivityTypeNumberList" type="ActivityTypeList">
+        <id column="type" property="type"></id>
+        <collection property="valueList" ofType="ActivityTypeNumber">
+            <id column="name" property="name"></id>
+            <result column="value" property="value"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getActivityTypeNumber" resultMap="getActivityTypeNumberList">
+        SELECT '活动次数' type,label name,count(label) value FROM activity WHERE curdate() - INTERVAL 7 DAY  &lt;= begin_time GROUP BY label union all
+        SELECT '活动人数' type,label name,count(userid) value FROM view_activity_user  WHERE curdate() - INTERVAL 7 DAY  &lt;= begin_time GROUP BY label
+    </select>
+
+    <select id="getActivityNumber" resultType="ActivityAbnormalInformation">
+        select name,count(name) activityNumber from view_activity_user where curdate() - INTERVAL 7 DAY &lt;= begin_time group by name
+    </select>
+
+    <select id="getActivityAverageNumber" resultType="ActivityAbnormalInformation">
+        select name,count(name) averageNumber from view_activity_user group by name
+    </select>
+</mapper>

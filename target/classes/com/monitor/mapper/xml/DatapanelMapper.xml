@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.monitor.mapper.DatapanelMapper">
+    <select id="getUserInformationState" resultType="TypeNumber">
+        select state as name,count(state) as value
+        from view_user_information
+        where roleid = 2
+        group by state
+    </select>
+
+    <select id="getServiceStructure" resultType="TypeNumber">
+        SELECT '医疗服务' name,count(serviceid) as value FROM view_nursing_workers_service where serviceid = 101 and date_type = '上周' union
+        SELECT '家政服务' name,count(serviceid) FROM view_nursing_workers_service where serviceid = 102 and date_type = '上周' union
+        SELECT '休闲娱乐' name,count(serviceid) FROM view_nursing_workers_service where serviceid = 103 and date_type = '上周' union
+        SELECT '家庭便利' name,count(serviceid) FROM view_nursing_workers_service where serviceid = 105 and date_type = '上周' union
+        SELECT '心理慰藉' name,count(serviceid) FROM view_nursing_workers_service where serviceid = 104 and date_type = '上周'
+    </select>
+
+    <select id="getTreatmentValues" resultType="TypeNumber">
+        select type name,value from treatment_type
+    </select>
+    
+    <resultMap id="nursing_evaluate" type="ServiceDataTypeNumber">
+        <id column="nursingname" property="name"></id>
+        <result column="evaluate" property="evaluate"></result>
+        <collection property="value" ofType="TypeNumber">
+            <result column="name" property="name"/>
+            <result column="value" property="value"/>
+        </collection>
+    </resultMap>
+
+    <select id="getNursingWorkersEvaluate" resultMap="nursing_evaluate" >
+        select vs.nursingname,vr.evaluate,vs.servicename name,substr(sum(vs.evaluate)/count(vs.servicename),1,5) value
+        FROM (view_nursing_workers_service vs left join service on service.service_type_id = vs.serviceid) left join view_nursing_workers_evaluate_ranking vr on vs.nursingid = vr.nursingid
+        GROUP BY vs.nursingname,vs.servicename
+        order by evaluate desc
+            limit 15
+    </select>
+
+    <select id="getAbnormalHealth" resultType="TypeNumber">
+        select '体温异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '体温异常' and dateType = '本周' union all
+        select '血压异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '血压异常' and dateType = '本周' union all
+        select '心率异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '心率异常' and dateType = '本周' union all
+        select '倾斜异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '倾斜异常' and dateType = '本周' union all
+        select '姿态异常' name,count(posture) value from view_user_information_bracelet_abnormal where posture = '姿态异常' and dateType = '本周' union all
+        select '情绪异常' name,count(emotion) value from view_user_information_bracelet_abnormal where emotion = '情绪异常' and dateType = '本周'union all
+        select '体温异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '体温异常' and dateType = '上周' union all
+        select '血压异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '血压异常' and dateType = '上周' union all
+        select '心率异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '心率异常' and dateType = '上周' union all
+        select '倾斜异常' name,count(type) value from view_user_information_bracelet_abnormal where type = '倾斜异常' and dateType = '上周' union all
+        select '姿态异常' name,count(posture) value from view_user_information_bracelet_abnormal where posture = '姿态异常' and dateType = '上周' union all
+        select '情绪异常' name,count(emotion) value from view_user_information_bracelet_abnormal where emotion = '情绪异常' and dateType = '上周'
+    </select>
+
+    <select id="getAgeGroup" resultType="TypeNumber">
+        SELECT
+        '男中老年' name,
+        count(ui.userid)  AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >40 and age&lt;60 and gender = '男'
+        union
+        SELECT
+        '男年轻老年' name,
+        count(ui.userid)  AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >=60 and age&lt;75 and gender = '男'
+        union
+        SELECT
+        '男老年' name,
+        count(ui.userid)  AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >=75 and age&lt;89 and gender = '男'
+        union
+        SELECT
+        '女中老年' name,
+        count( ui.userid ) AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >40 and age&lt;60 and gender = '女'
+        union
+        SELECT
+        '女年轻老年' name,
+        count( userid ) AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >=60 and age&lt;75 and gender = '女'
+        union
+        SELECT
+        '女老年' name,
+        count(userid) AS
+        VALUE
+        FROM
+        user_information ui
+        WHERE
+        age >=75 and age&lt;89 and gender = '女'
+    </select>
+</mapper>

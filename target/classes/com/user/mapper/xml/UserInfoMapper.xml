@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.user.mapper.UserInfoMapper">
+<!--    根据userid修改user_information中的记录-->
+    <update id="updateInfoByUserId" parameterType="UserInfo">
+        update user_information set name = #{name},age = #{age},gender = #{gender},
+                                    idcardnumber = #{idcardnumber},phonenumber = #{phonenumber},
+                                    personalprofile = #{personalprofile},address = #{address}
+where userid = #{userid}
+    </update>
+
+<!--    根据userid查询username-->
+    <select id="getUserIdByUserName" resultType="java.lang.Integer">
+        select id from user where username = #{username}
+    </select>
+
+    <update id="UpdataHeadpByUserId">
+        update user_information set headportrait = #{headportrait},filename = #{filename} where userid = #{userid}
+    </update>
+
+    <select id="selectFilenameByUserName" resultType="java.lang.String">
+        select filename from view_user_information where username = #{username}
+    </select>
+
+    <select id="getInfoByUserName" resultType="UserInfo">
+        select * from view_user_information where name = #{username}
+    </select>
+
+    <select id="getHeadCupptureByUserName" resultType="java.lang.String">
+        select headportrait from view_user_information where username = #{username}
+    </select>
+
+    <select id="getUserBraceletInfoByUserName" resultType="Bracelet">
+        select * from view_user_information_bracelet where username = #{username}
+    </select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.user.mapper.UserMapper">
+    <insert id="save" parameterType="User" keyProperty="id" useGeneratedKeys="true">
+        insert into user(id,username,password,salt,create_time,roleid) values(#{id},#{username},#{password},#{salt},#{create_time},#{roleid})
+    </insert>
+
+    <select id="findByUserName" parameterType="java.lang.String" resultType="User">
+        select username,password,salt,id from user where username = #{username}
+    </select>
+    
+    <resultMap id="userMap" type="User">
+        <id column="uid" property="id"></id>
+        <result column="username" property="username"></result>
+<!--        角色信息-->
+        <collection property="roles" javaType="java.util.List" ofType="Role">
+            <id column="id" property="id"></id>
+            <result column="rname" property="name"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findRolesByUserName" parameterType="String" resultMap="userMap">
+        SELECT u.id uid,u.username uname,u.password,r.id,r.name rname FROM user u
+        left join user_role ur on u.id = ur.userid
+        left join role r on ur.roleid = r.id
+        where u.username = #{username}
+    </select>
+
+    <select id="findPermsByRoleId" parameterType="String" resultType="Perms">
+        SELECT p.id,p.name,p.url,r.name rname from role r
+        left join role_perms rp on r.id = rp.roleid
+        left join perms p on rp.permsid = p.id
+        WHERE r.id = #{id}
+    </select>
+</mapper>

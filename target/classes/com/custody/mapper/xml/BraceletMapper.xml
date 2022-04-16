@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.custody.mapper.BraceletMapper">
+    <select id="getAbnormalUserByAbnormal" resultType="AbnormalTypeInformation">
+        select
+        va.userid userid,
+        va.name name,
+        va.headurl headurl,
+        ul.location,
+        ul.roadlocation,
+        va.date date,
+        va.type,va.posture,va.emotion,
+        va.heartrate heartrate,'60-80' heartrateRange,
+        va.temperature temperature,'36-37' temperatureRange,
+        va.bloodpressure bloodpressure,'80-120' bloodpressureRange,
+        va.tilt tilt,'0.2-0.8' tiltRange
+        from view_user_information_bracelet_abnormal va left join user_location ul on va.userid = ul.userid
+        <where> va.date>NOW()-INTERVAL 18 HOUR
+         <if test="abnormalName != '' and abnormalName != null">and type = #{abnormalName}</if>
+        </where>
+        ORDER BY va.date
+    </select>
+
+    <select id="getUsersInformation" resultType="UsersAbnormalInformation">
+        SELECT vib.id userid,vib.`name` name,
+               vib.headurl headurl,vib.date date,
+               vib.heartrate heartrate,'60-80' heartrateRange,
+               vib.temperature temperature,'36-37' temperatureRange,
+               vib.bloodpressure bloodpressure,'80-120' bloodpressureRange,
+               vib.tilt tilt,'0.2-0.8' tiltRange
+        from view_user_information_bracelet vib
+        group by userid
+        order by userid limit 31
+    </select>
+
+    <select id="getUserInformationByUserId" resultType="UsersInformation">
+        select * from view_user_information_bracelet where id = #{userid}
+    </select>
+
+    <select id="getBraceletAbnormalTypeNumber" resultType="CustodyAbnormalTypeNumber">
+        select type name,count(type) value from view_user_information_bracelet_abnormal where date>NOW()-INTERVAL 18 HOUR group by type
+    </select>
+</mapper>

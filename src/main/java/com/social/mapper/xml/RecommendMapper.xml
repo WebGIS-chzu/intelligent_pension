@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.social.mapper.RecommendMapper">
+
+    <resultMap id="RecommendMap" type="RecommendInformation">
+        <id column="userid" property="userid"></id>
+        <result column="name" property="name"></result>
+        <result column="radius" property="radius"></result>
+        <result column="date_range" property="date_range"></result>
+        <collection property="recommendPlace" ofType="RecommendPlace">
+            <result column="place_id" property="place_id"></result>
+            <result column="place_name" property="place_name"></result>
+        </collection>
+    </resultMap>
+    <select id="getRecommendInformation" resultMap="RecommendMap">
+        select * from view_recommend WHERE date_range = #{dateRange} and radius &lt;= #{radius}
+    </select>
+
+    <resultMap id="RecommendMapT" type="RecommendInformation">
+        <id column="userid" property="userid"></id>
+        <result column="name" property="name"></result>
+        <result column="radius" property="radius"></result>
+        <result column="date_range" property="date_range"></result>
+        <collection property="recommendPlace" ofType="RecommendPlace">
+            <result column="place_id" property="place_id"></result>
+            <result column="place_name" property="place_name"></result>
+        </collection>
+    </resultMap>
+    <select id="getRecommendInformationT" resultMap="RecommendMapT">
+        SELECT * from view_recommend WHERE userid = #{userid} and date_range = #{dateRange}
+    </select>
+
+    <select id="getRecommenSimplelyInformation" resultType="RecommendSimplelyInfor">
+        select * from view_recommend where userid = #{userid} group by userid
+    </select>
+
+    <select id="getRecommendResemble" resultType="RecommendResemble">
+        SELECT '时间重合度' name,substr(birthday,3,2)/100 value
+        from user_information
+        WHERE userid = #{userid}
+        union all
+        SELECT '空间相近度' name,substr(radius,1,2)/100 from view_recommend WHERE userid = #{userid} GROUP BY userid
+        union all
+        select '爱好相似度',age/100 from user_information WHERE userid = #{userid}
+    </select>
+</mapper>

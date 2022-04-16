@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.social.mapper.ChainMapper">
+<select id="getElderlyLocation" resultType="ChainTypeNumber">
+    select userid, location from view_user_information group by userid
+</select>
+
+    <select id="getUserInformationByUserId" resultType="ChainUserInfor">
+        select * from view_user_information where userid = #{userid}
+    </select>
+
+    <select id="getChainNodeListByCondition" resultType="ChainNodeList">
+        SELECT sender_id userid,sender_name name,sender_headportrait headPortrait from  view_communication_all
+        <where>
+            <if test="userid != null and userid != ''">
+                sender_id = #{userid}
+            </if>
+            <if test="name != null and name != ''">
+                 or sender_name = #{name}
+            </if>
+        </where>
+         GROUP BY userid union all
+        SELECT recipient_id userid,recipient_name name,recipient_headportrait headPortrait from  view_communication_all
+        <where>
+            <if test="userid != null and userid != ''">
+                sender_id = #{userid}
+            </if>
+            <if test="name != null and name != ''">
+                or sender_name = #{name}
+            </if>
+        group by recipient_id
+        </where>
+    </select>
+    <select id="getChainLinkListByCondition" resultType="ChainLinkList">
+        SELECT sender_id,recipient_id,date from view_communication_all
+        <where>
+         <if test="userid != null and userid != ''">
+            sender_id = #{userid}
+        </if>
+            <if test="name != null and name != ''">
+                or sender_name = #{name}
+            </if></where>
+group by recipient_id
+    </select>
+
+    <select id="getUserId" resultType="java.lang.String">
+        select userid from user_information where name = #{name}
+    </select>
+
+    <select id="getElderlyLocationById" resultType="ChainTypeNumber">
+        select userid,location from view_user_information where userid = #{userid} group by userid
+    </select>
+</mapper>
